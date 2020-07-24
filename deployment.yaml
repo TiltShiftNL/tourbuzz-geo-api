@@ -1,0 +1,36 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: tourbuzz-geo-api-service
+spec:
+  selector:
+    app: tourbuzz-geo-api-service
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tourbuzz-geo-api
+  labels:
+    app: tourbuzz-geo-api-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tourbuzz-geo-api-service
+  template:
+    metadata:
+      labels:
+        app: tourbuzz-geo-api-service
+    spec:
+      imagePullSecrets:
+      - name: pipeline-docker-registry
+      containers:
+      - name: tourbuzz-geo-api-service
+        image: ${CICD_IMAGE}:${CICD_EXECUTION_SEQUENCE}
+        ports:
+        - containerPort: 8000
