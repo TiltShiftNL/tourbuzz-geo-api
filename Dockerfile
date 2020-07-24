@@ -1,4 +1,4 @@
-FROM python:3.8.3-slim
+FROM python:3.8.5-slim
 
 WORKDIR /usr/src/app
 
@@ -12,7 +12,7 @@ ENV AMSTERDAM_STOPS "https://api.data.amsterdam.nl/dcatd/datasets/IuAYhr-__qZj9Q
 ENV AMSTERDAM_PARKING "https://api.data.amsterdam.nl/dcatd/datasets/IuAYhr-__qZj9Q/purls/uB95bElRaUcD0A"
 
 RUN apt-get update && apt-get install -y \
-    postgresql-client
+    postgresql-client libpq-dev
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
