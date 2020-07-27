@@ -61,20 +61,30 @@ def get_environmental_zones_v1():
 
 
 @app.get("/api/v2/max_height.geojson")
-def get_max_height_v2():
-    return max_height.geojson_all()
+def get_max_height_v2(bounds = None):
+    if bounds is None:
+        return max_height.geojson_all()
+    else:
+        return max_height.geojson_bbox(bounds)
 
 
 @app.get("/api/v2/environmental_zones.geojson")
-def get_environmental_zones_v2():
-    return environmental_zone.geojson_all()
-
+def get_environmental_zones_v2(bounds = None):
+    if bounds is None:
+        return environmental_zone.geojson_all()
+    else:
+        return environmental_zone.geojson_bbox(bounds)
 
 @app.get("/api/v2/parking.geojson")
-def get_parking_v2():
-    return parking.geojson_all()
-
+def get_parking_v2(bounds = None):
+    if bounds is None:
+        return parking.geojson_all()
+    else:
+        return parking.geojson_bbox(bounds)
 
 @app.get("/api/v2/stops.geojson")
-def get_stops_v2():
-    return stops.geojson_all()
+def get_stops_v2(bounds = None):
+    if bounds is None:
+        return stops.geojson_all()
+    else:
+        return stops.geojson_bbox(bounds)

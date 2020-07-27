@@ -1,6 +1,7 @@
 import json
 from .database import SessionLocal, engine
 from .models import DbEnvironmentalZone
+from geoalchemy2 import func
 
 
 def get_base_query():
@@ -27,44 +28,7 @@ def get_base_query():
         DbEnvironmentalZone.autobusjaar)
 
 
-def legacy():
-    try:
-        result = get_base_query().filter(DbEnvironmentalZone.gemeente == "Amsterdam").all()
-    except:
-        DbEnvironmentalZone.__table__.create(engine)
-        result = get_base_query().filter(DbEnvironmentalZone.gemeente == "Amsterdam").all()
-
-    feature_collection = {
-        "type": "FeatureCollection",
-        "name": "milieuzones",
-        "crs": {
-            "type": "name",
-            "properties": {
-                "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
-            }
-        },
-        "features": []
-    }
-    for entry in result:
-        feature = {"type": "Feature", "properties": {
-            "ogc_fid": str(entry[0]),
-            "id": str(entry[1]),
-            "verkeerstype": "vracht",
-            "vanafdatum": "2008-01-01",
-            "color": "#772b90"
-        }, "geometry": json.loads(entry[2])}
-        feature_collection["features"].append(feature)
-
-    return feature_collection
-
-
-def geojson_all():
-    try:
-        result = get_base_query().all()
-    except:
-        DbEnvironmentalZone.__table__.create(engine)
-        result = get_base_query().all()
-
+def construct_geojson(result):
     feature_collection = {
         "type": "FeatureCollection",
         "name": "environmental_zones",
@@ -113,3 +77,61 @@ def geojson_all():
         feature_collection["features"].append(feature)
 
     return feature_collection
+
+def legacy():
+    try:
+        result = get_base_query().filter(DbEnvironmentalZone.gemeente == "Amsterdam").all()
+    except:
+        DbEnvironmentalZone.__table__.create(engine)
+        result = get_base_query().filter(DbEnvironmentalZone.gemeente == "Amsterdam").all()
+
+    feature_collection = {
+        "type": "FeatureCollection",
+        "name": "milieuzones",
+        "crs": {
+            "type": "name",
+            "properties": {
+                "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+            }
+        },
+        "features": []
+    }
+    for entry in result:
+        feature = {"type": "Feature", "properties": {
+            "ogc_fid": str(entry[0]),
+            "id": str(entry[1]),
+            "verkeerstype": "vracht",
+            "vanafdatum": "2008-01-01",
+            "color": "#772b90"
+        }, "geometry": json.loads(entry[2])}
+        feature_collection["features"].append(feature)
+
+    return feature_collection
+
+
+def geojson_bbox(bounds):
+    bounds_parts = bounds.split(',')
+    result = get_base_query().filter(
+            func.ST_Crosses(
+                func.ST_MakeEnvelope(
+                    bounds_parts[0],
+                    bounds_parts[1],
+                    bounds_parts[2],
+                    bounds_parts[3],
+                    4326
+                ),
+                DbEnvironmentalZone.wkb_geometry.ST_Transform(4326),
+            )
+        ).all()
+    return construct_geojson(result)
+
+
+def geojson_all():
+    try:
+        result = get_base_query().all()
+    except:
+        DbEnvironmentalZone.__table__.create(engine)
+        result = get_base_query().all()
+    return construct_geojson(result)
+
+    
