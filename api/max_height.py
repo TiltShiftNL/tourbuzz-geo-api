@@ -42,11 +42,15 @@ def construct_geojson(result):
                 "type": "Feature",
                 "properties": {
                     "title": entry[0] or "",
-                    "maxheight_text": dh.strip("0").strip(".") + "m",
-                    "maxheight": float(dh.strip("0").strip("."))
+                    "maxheight_text": dh.strip("0").strip(".") + "m"
+                    
                 },
                 "geometry": json.loads(entry[2]),
             }
+            try:
+                out["properties"]["maxheight"] = float(dh.strip("0").strip("."))
+            except:
+                pass
             feature_collection["features"].append(out)
     return feature_collection
 
